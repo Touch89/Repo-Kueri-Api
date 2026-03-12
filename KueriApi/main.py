@@ -73,6 +73,29 @@ def crear_pedido_virtual(nombre: str, direccion: str, correo: str):
 def crear_pedido_fisico():
   return
 
+@app.put("/pedidos/fisico/{id_pedido}",
+          description = "Modifica los datos de un pedido físico.", 
+          tags = ["Pedidos"])
+def actualizar_pedido_fisico(id: int):
+  return
+
+@app.put("/pedidos/en_linea/{id_pedido}",
+          description = "Modifica los datos de un pedido en línea.", 
+          tags = ["Pedidos"])
+def actualizar_pedido_virtual(id: int):
+  return
+
+@app.delete("/pedidos/fisico/{id_pedido}",
+          description = "Elimina un pedido físico. Para eliminar el pedido tiene que haberse cancelado.", 
+          tags = ["Pedidos"])
+def eliminar_pedido_fisico(id: int):
+  return
+
+@app.delete("/pedidos/en_linea/{id_pedido}",
+          description = "Modifica los datos de un pedido en línea. Para eliminarse el pedido tiene que haberse cancelado", 
+          tags = ["Pedidos"])
+def eliminar_pedido_virtual(id: int):
+  return
 
 # Sección Carrito ('')
 
@@ -90,10 +113,22 @@ def obtener_carrito():
 def carrito_agregar_producto(id_producto: int):
   return
 
+@app.put("/carrito/{id_producto}",
+         description = "Modifica un producto dentro del carrito. Hasta ahora únicamente se puede modificar la cantidad del producto que se pidió",
+         tags=["Carrito"])
+def carrito_modificar_producto(id_producto: int):
+  return
+
 @app.delete("/carrito/{id_producto}", 
             description= "Elimina un producto del carrito",
             tags=["Carrito"])
 def carrito_eliminar_producto(id_producto: int):
+  return
+
+@app.delete("/carrito", 
+            description= "Elimina todos los productos del carrito",
+            tags=["Carrito"])
+def limpiar_carrito(id_producto: int):
   return
 
 
