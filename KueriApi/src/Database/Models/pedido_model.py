@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum
-from src.Database.Models.producto_model import Producto
+from src.database.models.producto_model import Producto
 
 class Pedido(BaseModel):
     id: int

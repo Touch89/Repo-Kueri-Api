@@ -17,25 +17,25 @@ def obtener_carrito():
 
 #Hay que ver si es más fácil que use el producto o la id, 
 # o capaz y se cambia la dirección completamente
-@router.post("/carrito/{id_producto}", status_code=status.HTTP_201_CREATED,
+@router.post("/{id_producto}", status_code=status.HTTP_201_CREATED,
          description = "Agrega un producto al carrito",
          tags=["Carrito"])
 def carrito_agregar_producto(id_producto: int):
   return
 
-@router.put("/carrito/{id_producto}",
+@router.put("/{id_producto}",
          description = "Modifica un producto dentro del carrito. Hasta ahora únicamente se puede modificar la cantidad del producto que se pidió",
          tags=["Carrito"])
 def carrito_modificar_producto(id_producto: int):
   return
 
-@router.delete("/carrito/{id_producto}", 
+@router.delete("/{id_producto}", 
             description= "Elimina un producto del carrito",
             tags=["Carrito"])
 def carrito_eliminar_producto(id_producto: int):
   return
 
-@router.delete("/carrito", 
+@router.delete("/", 
             description= "Elimina todos los productos del carrito",
             tags=["Carrito"])
 def limpiar_carrito(id_producto: int):

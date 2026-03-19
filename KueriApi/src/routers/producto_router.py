@@ -2,6 +2,10 @@ from http.client import OK, HTTPException
 from typing import Annotated, Union
 from typing import Optional
 from pydantic import BaseModel, Field
+from src.database.models.producto_model import Producto
+from ..dependencies import SessionDep
+from typing import Any
+from sqlmodel import Field, SQLModel, create_engine, Session, select, col, or_, Relationship
 
 from fastapi import FastAPI, status, APIRouter, HTTPException
 
@@ -14,27 +18,33 @@ router = APIRouter(
 def read_root():
   return {"Hello": "World"}
 
-@router.get("/productos", description = "Obtiene todos los productos disponibles", tags= ["Productos"])
-def obtener_productos():
-  return
+@router.get("/", description = "Obtiene todos los productos disponibles", tags= ["Productos"])
+def obtener_productos(session: SessionDep) -> Any: 
+  statement = select(Producto)
+  results = session.exec(statement)
+  productos = results.all()
+  return productos
 
-@router.get("/productos/{id_producto}", description = "Retorna los datos del producto que coincida con la id dada", 
+@router.get("/{id_producto}", description = "Retorna los datos del producto que coincida con la id dada", 
          tags= ["Productos"])
-def obtener_producto(id_producto: int):
-  return
+def obtener_producto(id_producto: int, session: SessionDep):
+  producto = session.get(Producto, id)
+  if producto is None:
+    raise HTTPException(status_code=404, detail="El producto que buscas no existe")
+  return producto
 
-@router.get("/productos/{nombre}", description = "Retorna los productos que coincidan con el nombre dado.", 
+@router.get("/{nombre}", description = "Retorna los productos que coincidan con el nombre dado.", 
          tags= ["Productos"])
 def obtener_producto(nombre: str):
   return
 
-@router.post("/productos", status_code=status.HTTP_201_CREATED,
+@router.post("/", status_code=status.HTTP_201_CREATED,
           description = "Crea un producto nuevo. Requiere del nombre, descripción, imagen(por ahora), precio y SKU del producto. Únicamente puede ser usado por administradores.",
           tags=["Admin / Productos"]) 
 def crear_producto(nombre: str, descripcion: str, precio: float, sku: str):
   return
 
-@router.delete("/productos/{id_producto}", description = 
+@router.delete("/{id_producto}", description = 
             """
             Elimina un producto de la lista de productos disponibles. 
             El producto no puede ser eliminado si hay pedidos en proceso que contengan el producto a eliminar.
@@ -42,7 +52,7 @@ def crear_producto(nombre: str, descripcion: str, precio: float, sku: str):
 def eliminar_producto(id_producto: int):
   return
 
-@router.put("/productos/{id_producto}", description = "Actualiza los datos de un producto con los datos dados. No se puede dejar datos vacíos al actualizar el producto. Únicamente puede ser usado por administradores.",
+@router.put("/{id_producto}", description = "Actualiza los datos de un producto con los datos dados. No se puede dejar datos vacíos al actualizar el producto. Únicamente puede ser usado por administradores.",
          tags=["Admin / Productos"])
 def actualizar_producto(id_producto: int):
   return
