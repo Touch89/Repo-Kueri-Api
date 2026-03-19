@@ -1,12 +1,17 @@
-from pydantic import BaseModel, Field
+from typing import TYPE_CHECKING, Optional
 
-class Producto(BaseModel):
-    id: int
-    nombre: str
+from sqlmodel import Field, Relationship, SQLModel
+
+class ProductoBase(SQLModel):
+    nombre: str = Field(index=True)
     descripcion: str
-    #imagen_url: str Hay que ver cómo se van a implementar las imágenes
+    #imagen_url: str  Hay que ver cómo implementar
     precio: float
     sku: str
     stock: int
-    fecha_creación: str #Ver el equivalente al datetime acá  
-    fecha_actualización: str #Lo mismo
+    #fecha_creación: str #Ver el equivalente al datetime acá  
+    #fecha_actualización: str #Lo mismo
+
+class Producto(ProductoBase, table = True):
+    id: Optional[int] = Field(default=None, primary_key= True)
+    

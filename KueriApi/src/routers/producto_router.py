@@ -2,7 +2,7 @@ from http.client import OK, HTTPException
 from typing import Annotated, Union
 from typing import Optional
 from pydantic import BaseModel, Field
-from src.database.models.producto_model import Producto
+from src.database.models.producto_model import Producto, ProductoBase
 from ..dependencies import SessionDep
 from typing import Any
 from sqlmodel import Field, SQLModel, create_engine, Session, select, col, or_, Relationship
@@ -35,14 +35,20 @@ def obtener_producto(id_producto: int, session: SessionDep):
 
 @router.get("/{nombre}", description = "Retorna los productos que coincidan con el nombre dado.", 
          tags= ["Productos"])
-def obtener_producto(nombre: str):
-  return
+def obtener_producto(nombre: str, session: SessionDep):
+  statement = select(Producto).where(col(Producto.nombre).contains(nombre))
+  results = session.exec(statement).all()
+  return results
 
 @router.post("/", status_code=status.HTTP_201_CREATED,
           description = "Crea un producto nuevo. Requiere del nombre, descripción, imagen(por ahora), precio y SKU del producto. Únicamente puede ser usado por administradores.",
-          tags=["Admin / Productos"]) 
-def crear_producto(nombre: str, descripcion: str, precio: float, sku: str):
-  return
+          tags=["Admin / Productos"], response_model = Producto) 
+def crear_producto(producto: ProductoBase, session: SessionDep) -> Producto:
+  productoNuevo = Producto.model_validate(producto)
+  session.add(productoNuevo)
+  session.commit()
+  session.refresh(productoNuevo)
+  return productoNuevo
 
 @router.delete("/{id_producto}", description = 
             """
