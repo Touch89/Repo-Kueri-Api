@@ -14,10 +14,6 @@ router = APIRouter(
 
 #Sección Productos (Tanto admin/empleados como usuarios)
 
-@router.get("/")
-def read_root():
-  return {"Hello": "World"}
-
 @router.get("/", description = "Obtiene todos los productos disponibles", tags= ["Productos"])
 def obtener_productos(session: SessionDep) -> Any: 
   statement = select(Producto)
