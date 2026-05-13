@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Optional
 from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel
+from pydantic import BaseModel, Field
+
 
 if TYPE_CHECKING:
   from .pedido_model import Pedido
@@ -16,7 +18,11 @@ class ProductoBase(SQLModel):
 
 class Producto(ProductoBase, table = True):
     id: Optional[int] = Field(default=None, primary_key= True)
-    fecha_creación: datetime = Field(default_factory=datetime.utcnow)
-    fecha_actualización: datetime = Field(default_factory=datetime.utcnow)
+    fecha_creación: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    fecha_actualización: Optional[datetime] = Field(default_factory=datetime.utcnow)
     pedidos: list[Pedido] = Relationship(back_populates="productos", link_model=ProductoPedido)
-    
+
+
+class ProductoEnPedido(BaseModel):
+   id_producto: int
+   cantidad: int
