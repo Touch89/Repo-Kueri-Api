@@ -1,0 +1,42 @@
+from http.client import OK, HTTPException
+from typing import Annotated, Union
+from typing import Optional
+from pydantic import BaseModel, Field
+
+from fastapi import FastAPI, status, APIRouter, HTTPException
+
+router = APIRouter(
+  prefix="/carrito",)
+
+
+@router.get("/carrito", 
+         description="Obtiene todos los productos en el carrito del usuario.",
+         tags=["Carrito"])
+def obtener_carrito():
+  return
+
+#Hay que ver si es más fácil que use el producto o la id, 
+# o capaz y se cambia la dirección completamente
+@router.post("/{id_producto}", status_code=status.HTTP_201_CREATED,
+         description = "Agrega un producto al carrito",
+         tags=["Carrito"])
+def carrito_agregar_producto(id_producto: int):
+  return
+
+@router.put("/{id_producto}",
+         description = "Modifica un producto dentro del carrito. Hasta ahora únicamente se puede modificar la cantidad del producto que se pidió",
+         tags=["Carrito"])
+def carrito_modificar_producto(id_producto: int):
+  return
+
+@router.delete("/{id_producto}", 
+            description= "Elimina un producto del carrito",
+            tags=["Carrito"])
+def carrito_eliminar_producto(id_producto: int):
+  return
+
+@router.delete("/", 
+            description= "Elimina todos los productos del carrito",
+            tags=["Carrito"])
+def limpiar_carrito(id_producto: int):
+  return
