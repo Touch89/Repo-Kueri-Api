@@ -1,0 +1,13 @@
+from pydantic import BaseModel, Field
+from typing import TYPE_CHECKING, Optional
+
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+  from .producto_model import Producto
+  from .producto_carrito_model import ProductoCarrito
+
+class Carrito(BaseModel):
+    id: int
+    productos: list["Producto"] #= Relationship(back_populates="productos", link_model=ProductoCarrito)
+    total: float

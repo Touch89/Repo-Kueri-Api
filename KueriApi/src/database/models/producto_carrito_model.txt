@@ -1,0 +1,12 @@
+from typing import TYPE_CHECKING, Optional
+
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+  from .carrito_model import Carrito
+  from .producto_model import Producto
+
+class ProductoCarrito(SQLModel, table = True):
+    idCarrito = int | None = Field(default=None, foreign_key="carrito.id", primary_key=True)
+    idProducto = int | None = Field(default=None, foreign_key="producto.id", primary_key=True)
+    cantidad = int

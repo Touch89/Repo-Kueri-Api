@@ -1,6 +1,10 @@
 from typing import TYPE_CHECKING, Optional
-
+from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+  from .pedido_model import Pedido
+  from .producto_pedido_model import ProductoPedido
 
 class ProductoBase(SQLModel):
     nombre: str = Field(index=True)
@@ -12,6 +16,7 @@ class ProductoBase(SQLModel):
 
 class Producto(ProductoBase, table = True):
     id: Optional[int] = Field(default=None, primary_key= True)
-    #fecha_creación: str #Ver el equivalente al datetime acá  
-    #fecha_actualización: str #Lo mismo
+    fecha_creación: datetime = Field(default_factory=datetime.utcnow)
+    fecha_actualización: datetime = Field(default_factory=datetime.utcnow)
+    pedidos: list[Pedido] = Relationship(back_populates="productos", link_model=ProductoPedido)
     

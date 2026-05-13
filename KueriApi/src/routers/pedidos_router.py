@@ -2,7 +2,7 @@ from http.client import OK, HTTPException
 from typing import Annotated, Union
 from typing import Optional
 from pydantic import BaseModel, Field
-
+from src.database.models.pedido_model import PedidoBase, Pedido
 from fastapi import FastAPI, status, APIRouter, HTTPException
 
 router = APIRouter(
