@@ -37,6 +37,10 @@ class PedidoVirtual(BaseModel):
     nombre_cliente: str
     direccion_cliente: str
     correo_cliente: str
-    precio_envio: float
+    precio_envio: float = Field(default=0.0)
+    productos: list[ProductoEnPedido]
+
+
+class PedidoFisico(BaseModel):
     productos: list[ProductoEnPedido]
 

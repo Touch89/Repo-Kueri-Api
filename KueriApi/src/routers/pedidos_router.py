@@ -2,7 +2,7 @@ from http.client import OK, HTTPException
 from typing import Annotated, Union
 from typing import Optional
 from pydantic import BaseModel, Field
-from src.database.models.pedido_model import PedidoBase, Pedido, TipoPedido, EstadoPedido, PedidoVirtual
+from src.database.models.pedido_model import PedidoBase, Pedido, TipoPedido, EstadoPedido, PedidoVirtual, PedidoFisico
 from src.database.models.producto_model import Producto, ProductoEnPedido
 from src.database.models.producto_pedido_model import ProductoPedido
 from fastapi import FastAPI, status, APIRouter, HTTPException
@@ -19,7 +19,7 @@ router = APIRouter(
          tags=["Admin / Pedidos"])
 def obtener_pedidos(session: SessionDep, tipo: Optional[TipoPedido] = None, estado: Optional[EstadoPedido] = None) -> Any:
   if (tipo is not None and estado is not None):
-    statement = select(Pedido).where(Pedido.tipo == tipo and Pedido.estado == estado)
+    statement = select(Pedido).where(Pedido.tipo == tipo, Pedido.estado == estado)
   elif (tipo is not None):
     statement = select(Pedido).where(Pedido.tipo == tipo)
   elif (estado is not None):
@@ -27,7 +27,7 @@ def obtener_pedidos(session: SessionDep, tipo: Optional[TipoPedido] = None, esta
   else:
     statement = select(Pedido)
 
-  pedidos = session.exec(statement)
+  pedidos = session.exec(statement).all()
 
   return pedidos
 
@@ -35,7 +35,7 @@ def obtener_pedidos(session: SessionDep, tipo: Optional[TipoPedido] = None, esta
          description="Retorna los datos del pedido que coincida con la id dada.",
          tags=["Admin / Pedidos"])
 def obtener_pedido(session: SessionDep, id_pedido: int):
-  pedido = select.get(Pedido, id_pedido)
+  pedido = session.get(Pedido, id_pedido)
   if pedido is None:
     raise HTTPException(status_code=404, detail="El pedido que buscas no existe")
   return pedido
@@ -47,9 +47,9 @@ def crear_pedido_virtual(session:SessionDep, pedido: PedidoVirtual) -> Pedido:
   pedidoFinal = Pedido(
         tipo = TipoPedido.en_linea,
         estado = EstadoPedido.en_proceso,
-        nombre_cliente = pedido.nombre,
-        direccion_cliente = pedido.direccion,
-        correo_cliente = pedido.correo,
+        nombre_cliente = pedido.nombre_cliente,
+        direccion_cliente = pedido.direccion_cliente,
+        correo_cliente = pedido.correo_cliente,
         precio_envio = pedido.precio_envio,
         precio_total = 0
     )
@@ -57,10 +57,10 @@ def crear_pedido_virtual(session:SessionDep, pedido: PedidoVirtual) -> Pedido:
   precio_total = 0
   for producto in pedido.productos:
     datosProducto = session.get(Producto, producto.id_producto)
-    if producto is None:
+    if datosProducto is None:
       raise HTTPException(status_code=404, detail=f"El producto {producto.id_producto} no existe")
     if datosProducto.stock < producto.cantidad:
-      raise HTTPException(status_code=404, detail=f"El producto {producto.id_producto} no tiene stock suficiente")
+      raise HTTPException(status_code = 404, detail = f"El producto {producto.id_producto} no tiene stock suficiente")
     precio_total += (datosProducto.precio * producto.cantidad)
     datosProducto.stock -= producto.cantidad
     conexion = ProductoPedido(
@@ -70,7 +70,7 @@ def crear_pedido_virtual(session:SessionDep, pedido: PedidoVirtual) -> Pedido:
     )
     session.add(conexion)
   pedidoFinal.precio_total = precio_total + pedidoFinal.precio_envio
-  session.commit
+  session.commit()
   session.refresh(pedidoFinal)
   return pedidoFinal
 
@@ -78,29 +78,55 @@ def crear_pedido_virtual(session:SessionDep, pedido: PedidoVirtual) -> Pedido:
 @router.post("/fisico", status_code=status.HTTP_201_CREATED, 
           description = "Crea un pedido en físico.", 
           tags = ["Admin / Pedidos"]) #Es tanto admin como empleados, pero aún no he hecho la división en ningún endpoint
-def crear_pedido_fisico():
-  return
+def crear_pedido_fisico(session:SessionDep, pedido: PedidoFisico) -> Pedido: 
+  pedidoFinal = Pedido(
+        tipo = TipoPedido.fisico,
+        estado = EstadoPedido.en_proceso,
+        precio_total = 0
+    )
+  session.add(pedidoFinal)
+  precio_total = 0
+  for producto in pedido.productos:
+    datosProducto = session.get(Producto, producto.id_producto)
+    if datosProducto is None:
+      raise HTTPException(status_code=404, detail=f"El producto {producto.id_producto} no existe")
+    if datosProducto.stock < producto.cantidad:
+      raise HTTPException(status_code = 404, detail = f"El producto {producto.id_producto} no tiene stock suficiente")
+    precio_total += (datosProducto.precio * producto.cantidad)
+    datosProducto.stock -= producto.cantidad
+    conexion = ProductoPedido(
+      idPedido = pedidoFinal.id,
+      idProducto = producto.id_producto,
+      cantidad = producto.cantidad
+    )
+    session.add(conexion)
+  pedidoFinal.precio_total = precio_total
+  session.commit()
+  session.refresh(pedidoFinal)
+  return pedidoFinal
 
 @router.put("/fisico/{id_pedido}",
           description = "Modifica los datos de un pedido físico.", 
           tags = ["Pedidos"])
-def actualizar_pedido_fisico(id: int):
+def actualizar_pedido_fisico(id_pedido: int):
   return
 
 @router.put("/en_linea/{id_pedido}",
           description = "Modifica los datos de un pedido en línea.", 
           tags = ["Pedidos"])
-def actualizar_pedido_virtual(id: int):
+def actualizar_pedido_virtual(id_pedido: int):
   return
 
-@router.delete("/fisico/{id_pedido}",
+@router.delete("/{id_pedido}",
           description = "Elimina un pedido físico. Para eliminar el pedido tiene que haberse cancelado.", 
           tags = ["Pedidos"])
-def eliminar_pedido_fisico(id: int):
-  return
-
-@router.delete("/en_linea/{id_pedido}",
-          description = "Modifica los datos de un pedido en línea. Para eliminarse el pedido tiene que haberse cancelado", 
-          tags = ["Pedidos"])
-def eliminar_pedido_virtual(id: int):
-  return
+def eliminar_pedido(session: SessionDep, id_pedido: int):
+  pedido = session.get(Pedido, id_pedido)
+  if pedido is None:
+    raise HTTPException(status_code = 404, detail = f"El pedido (id: {id_pedido}) no existe")
+  if pedido.estado != EstadoPedido.cancelado:
+    raise HTTPException(status_code = 400, detail = f"El pedido (id: {id_pedido}) no puede ser eliminado") 
+  session.delete(pedido)
+  session.commit()
+  response = f"El pedido (id: {id_pedido}) ha sido eliminado."
+  return response

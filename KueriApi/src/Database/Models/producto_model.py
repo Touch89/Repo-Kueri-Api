@@ -18,8 +18,8 @@ class ProductoBase(SQLModel):
 
 class Producto(ProductoBase, table = True):
     id: Optional[int] = Field(default=None, primary_key= True)
-    fecha_creación: Optional[datetime] = Field(default_factory=datetime.utcnow)
-    fecha_actualización: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    fecha_creacion: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    fecha_actualizacion: Optional[datetime] = Field(default_factory=datetime.utcnow)
     pedidos: list[Pedido] = Relationship(back_populates="productos", link_model=ProductoPedido)
 
 
